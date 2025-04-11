@@ -16,6 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Check if Supabase is properly initialized
+    if (!supabase) {
+      return res.status(500).json({ 
+        message: 'Database connection not available',
+        errorCode: 'DB_CONNECTION_ERROR'
+      });
+    }
+
     const { name, email, userType, agreedToTerms } = req.body;
 
     // Log request body for debugging
@@ -47,6 +55,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
     if (lookupError) {
       console.error('Error checking for existing email:', lookupError);
+      
+      // Check if error is due to table not existing
+      if (lookupError.message.includes('relation "waitlist" does not exist')) {
+        return res.status(500).json({
+          message: 'Database table not found. Please create the "waitlist" table.',
+          errorCode: 'TABLE_NOT_FOUND',
+          errorDetails: lookupError.message,
+          sql: `
+CREATE TABLE waitlist (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  user_type TEXT NOT NULL,
+  agreed_to_terms BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+          `
+        });
+      }
     }
     
     if (existingUser) {

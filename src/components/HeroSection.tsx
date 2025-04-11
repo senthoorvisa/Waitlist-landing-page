@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import WaitlistForm from './WaitlistForm';
 
@@ -6,6 +6,9 @@ const HeroSection = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
+    // Early return if window is not defined (SSR)
+    if (typeof window === 'undefined') return;
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -36,6 +39,8 @@ const HeroSection = () => {
       }
       
       update() {
+        if (!canvas) return;
+        
         this.x += this.speedX;
         this.y += this.speedY;
         
@@ -45,7 +50,8 @@ const HeroSection = () => {
       }
       
       draw() {
-        if (!ctx) return;
+        if (!ctx || !canvas) return;
+        
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -58,6 +64,8 @@ const HeroSection = () => {
     
     // Set canvas dimensions
     const resizeCanvas = () => {
+      if (!canvas) return;
+      
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       initParticles();
@@ -81,6 +89,8 @@ const HeroSection = () => {
     
     // Animation loop
     const animate = () => {
+      if (!ctx || !canvas) return;
+      
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < particles.length; i++) {
@@ -96,7 +106,9 @@ const HeroSection = () => {
     // Clean up
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 
@@ -105,6 +117,7 @@ const HeroSection = () => {
       <canvas 
         ref={canvasRef} 
         className="absolute inset-0 w-full h-full z-0 opacity-30"
+        aria-hidden="true"
       />
       
       <div className="container relative z-10">

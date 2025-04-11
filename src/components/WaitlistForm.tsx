@@ -28,6 +28,7 @@ const WaitlistForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Client-side validation
     if (!formData.name || !formData.email || !formData.agreedToTerms) {
       setFormState({
         isSubmitting: false,
@@ -46,6 +47,11 @@ const WaitlistForm = () => {
     });
     
     try {
+      // Check if we're running in a browser environment
+      if (typeof window === 'undefined') {
+        throw new Error('Cannot submit form during server-side rendering');
+      }
+      
       console.log('Submitting form data:', formData);
       
       const response = await fetch('/api/waitlist', {
