@@ -9,11 +9,8 @@ const HeroSection = () => {
     // Early return if window is not defined (SSR)
     if (typeof window === 'undefined') return;
     
-    // Utility function to safely get canvas
-    const getCanvas = (): HTMLCanvasElement | null => canvasRef.current;
-    
     // Initial canvas check
-    const canvas = getCanvas();
+    const canvas = canvasRef.current;
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
@@ -23,19 +20,19 @@ const HeroSection = () => {
     
     // Particle class
     class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      color: string;
+      // Initialize with default values
+      x: number = 0;
+      y: number = 0;
+      size: number = 0;
+      speedX: number = 0;
+      speedY: number = 0;
+      color: string = '#ffffff';
       
       constructor() {
-        const canvasElement = getCanvas();
-        if (!canvasElement) return;
-        
-        this.x = Math.random() * canvasElement.width;
-        this.y = Math.random() * canvasElement.height;
+        // Use non-null assertion since we checked canvas above
+        // TypeScript doesn't track that canvas is non-null in this closure
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 0.5 - 0.25;
         this.speedY = Math.random() * 0.5 - 0.25;
@@ -46,27 +43,21 @@ const HeroSection = () => {
       }
       
       update() {
-        const canvasElement = getCanvas();
-        if (!canvasElement) return;
-        
         this.x += this.speedX;
         this.y += this.speedY;
         
-        // Bounce off edges
-        if (this.x < 0 || this.x > canvasElement.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvasElement.height) this.speedY *= -1;
+        // Bounce off edges - use non-null assertion
+        if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas!.height) this.speedY *= -1;
       }
       
       draw() {
-        if (!ctx) return;
-        const canvasElement = getCanvas();
-        if (!canvasElement) return;
-        
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
+        // We already checked ctx is non-null
+        ctx!.fillStyle = this.color;
+        ctx!.beginPath();
+        ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx!.closePath();
+        ctx!.fill();
       }
     }
     
@@ -74,11 +65,8 @@ const HeroSection = () => {
     
     // Set canvas dimensions
     const resizeCanvas = () => {
-      const canvasElement = getCanvas();
-      if (!canvasElement) return;
-      
-      canvasElement.width = window.innerWidth;
-      canvasElement.height = window.innerHeight;
+      canvas!.width = window.innerWidth;
+      canvas!.height = window.innerHeight;
       initParticles();
     };
     
@@ -100,10 +88,7 @@ const HeroSection = () => {
     
     // Animation loop
     const animate = () => {
-      const canvasElement = getCanvas();
-      if (!ctx || !canvasElement) return;
-      
-      ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
       
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();

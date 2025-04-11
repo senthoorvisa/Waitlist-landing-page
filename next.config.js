@@ -2,9 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    // Enable React 19 features
-    serverActions: true,
-    serverComponents: true,
+    // Enable only compatible features for Next.js 14
   }
 }
 
