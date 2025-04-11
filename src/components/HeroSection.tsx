@@ -9,7 +9,11 @@ const HeroSection = () => {
     // Early return if window is not defined (SSR)
     if (typeof window === 'undefined') return;
     
-    const canvas = canvasRef.current;
+    // Utility function to safely get canvas
+    const getCanvas = (): HTMLCanvasElement | null => canvasRef.current;
+    
+    // Initial canvas check
+    const canvas = getCanvas();
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
@@ -27,8 +31,11 @@ const HeroSection = () => {
       color: string;
       
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        const canvasElement = getCanvas();
+        if (!canvasElement) return;
+        
+        this.x = Math.random() * canvasElement.width;
+        this.y = Math.random() * canvasElement.height;
         this.size = Math.random() * 3 + 1;
         this.speedX = Math.random() * 0.5 - 0.25;
         this.speedY = Math.random() * 0.5 - 0.25;
@@ -39,18 +46,21 @@ const HeroSection = () => {
       }
       
       update() {
-        if (!canvas) return;
+        const canvasElement = getCanvas();
+        if (!canvasElement) return;
         
         this.x += this.speedX;
         this.y += this.speedY;
         
         // Bounce off edges
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        if (this.x < 0 || this.x > canvasElement.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvasElement.height) this.speedY *= -1;
       }
       
       draw() {
-        if (!ctx || !canvas) return;
+        if (!ctx) return;
+        const canvasElement = getCanvas();
+        if (!canvasElement) return;
         
         ctx.fillStyle = this.color;
         ctx.beginPath();
@@ -64,10 +74,11 @@ const HeroSection = () => {
     
     // Set canvas dimensions
     const resizeCanvas = () => {
-      if (!canvas) return;
+      const canvasElement = getCanvas();
+      if (!canvasElement) return;
       
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvasElement.width = window.innerWidth;
+      canvasElement.height = window.innerHeight;
       initParticles();
     };
     
@@ -89,9 +100,10 @@ const HeroSection = () => {
     
     // Animation loop
     const animate = () => {
-      if (!ctx || !canvas) return;
+      const canvasElement = getCanvas();
+      if (!ctx || !canvasElement) return;
       
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
